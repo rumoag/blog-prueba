@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!-- Hace saber al navegador que la página esta en castellano -->
+<html lang="es">
+<!--Configuraciones-->
+    <head>
+        <!-- Permite carácteres extraños del alfabeto americano: ñ, á, é... -->
+        <meta charset="utf-8">
+        <!--Título que aparecerá en la pestaña - La estructura será el nombre de la página actual + Descripción del sitio-->
+        <title>Inicio</title>
+        <!-- Icono que acompañará al title. También será el icono que se guardará a la hora de que hagan un marcador. Se recomienda un tamaño de 32x32 y en PNG	-->
+        <link rel="icon" type="image/png" href="favicon.png">
+        <!-- (Opcional) Sugiere un color al navegador para personalizar la ventana -->
+        <meta name="theme-color" content="#3c790a">
+        <!-- Bloquea el zoom en smartphones-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+        <!--Declara quien es el autor. Sin utilidad práctica -->
+        <meta name="author" content="Tu nombre">
+        <!-- (Opcional) Indica con que tecnologias se ha generado el HTML -->
+        <meta name="generator" content="Clojure">
+        <!-- Declara palabras claves -->
+        <meta name="keywords" content="html, css, javascript">
+        <!-- Declara la descripción de la web. Es utilizado por los motores de busqueda para la previa -->
+        <meta name="description" content="Descripcion de tu web">
+        <!-- Open Graph y Twitter card: Declara como se mostrará la previa del enlace si es compartida por Facebook o alguna otra red social -->
+        <meta property="og:image" content="img/miniatura.png">
+        <meta property="og:title" content="The Rock">
+        <!-- website, video, audio, article, book o profile -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="http://www.imdb.com/title/tt0117500/">
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="@cuenta">
+        <meta name="twitter:creator" content="@cuenta">
+        <!-- Open Graph Imagen completa (Opcional) -->
+        <meta property="og:image:secure_url" content="https://secure.example.com/ogp.jpg">
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:image:width" content="400">
+        <meta property="og:image:height" content="300">
+        <meta property="og:image:alt" content="A shiny red apple with a bite taken out">
+        <!-- Normalizador: Equilibra los estilos entre los Navegadores -->
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+        <!-- Tus archivos CSS -->
+        <link rel="stylesheet" type="text/css" href="css/spectre.min.css">
+        <!-- JAVASCRIPT -->
+        <script src="js/vendors/vue.min.js"></script>
+        <script src="js/main.js" defer></script>
+    </head>
+<!--Contenido de la web-->
+    <body>
+        <main id="app">
+           <h1>
+               Articulos del blog
+           </h1>
+            <button class="btn " @click=" crearNuevoArticulo ">Crear Nuevo Articulo</button>
+            <div class="container">
+                <div class="columns">
+                    <div class="column col-3" v-for="articulo in articulos">
+                        <div class="card" v-if="articulo.id !== articuloEditar " @click="articuloEditar = articulo.id" style="cursor: pointer;" >
+                            <div class="card-image">
+                                <img :src="articulo.fields.Imagen[0].url" class="img-responsive">
+                            </div>
+                            <div class="card-header">
+                                <div class="card-title h5">{{articulo.fields.Titulo}}</div>
+                                <div class="card-subtitle text-gray">{{articulo.fields.Tags[0]}}</div>
+                            </div>
+                            <div class="card-body">
+                                {{articulo.fields.Subtitulo}}
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-error" @click="borrarProducto(articulo.id)"> Eliminar</button>
+                            </div>
+                        </div>
+
+                        <div v-else>
+                            <div class="modal active" id="modal-id">
+                                <a href="#" class="modal-overlay" aria-label="Close" @click="cerrarModal"></a>
+                                <div class="modal-container">
+                                    <div class="modal-header">
+                                        <a href="#close" class="btn btn-clear float-right" aria-label="Close" @click="cerrarModal"></a>
+                                        <!--editar titulo-->
+                                        <div class="modal-title h5" v-if="articulo.id !== articuloTitulo "
+                                             @click="articuloTitulo = articulo.id, tituloActualizar = articulo.fields.Titulo">
+                                            {{articulo.fields.Titulo}}
+                                        </div>
+                                        <div v-else class="modal-title h5" >
+                                            <input type="text" @blur="articuloTitulo=false"
+                                                   v-model="tituloActualizar" @keypress.enter="actualizarArticuloTitulo(articulo.id, tituloActualizar);" >
+                                        </div>
+                                        <!--End editar titulo-->
+
+                                        <!--editar tag-->
+                                        <div class="card-subtitle text-gray" v-if="articulo.id !== articuloTag "
+                                             @click="articuloTag = articulo.id, tagActualizar = articulo.fields.Tags[0]">
+                                            {{articulo.fields.Tags[0]}}
+                                        </div>
+                                        <div v-else class="card-body" >
+
+                                            <select @blur="articuloTag=false"
+                                                    v-model="tagActualizar" @change="actualizarArticuloTag(articulo.id, tagActualizar);">
+
+                                                <option v-for="tag in articulos" >{{tag.fields.Tags[0]}}</option>
+                                            </select>
+
+                                        </div>
+                                        <!--end editar tag-->
+
+                                        <!--editar subtitulo-->
+                                        <div class="card-body" v-if="articulo.id !== articuloSubtitulo "
+                                             @click="articuloSubtitulo = articulo.id, subtituloActualizar = articulo.fields.Subtitulo">
+                                            {{articulo.fields.Subtitulo}}
+                                        </div>
+                                        <div v-else class="card-body" >
+                                            <input type="text" @blur="articuloSubtitulo=false"
+                                                   v-model="subtituloActualizar" @keypress.enter="actualizarArticuloSubtitulo(articulo.id, subtituloActualizar);" >
+                                         </div>
+                                        <!--end editar subtitulo-->
+                                    </div>
+                                    <div class="modal-body">
+                                        <!--editar Imagen-->
+                                        <div class="card-image" v-if="articulo.id !== articuloImagen "
+                                             @click="articuloImagen = articulo.id, imagenActualizar = articulo.fields.Imagen[0].url">
+                                            <img :src="articulo.fields.Imagen[0].url" class="img-responsive" style="cursor:pointer">
+                                        </div>
+                                        <div v-else class="card-image">
+                                            <input v-model="busqueda" type="search" placeholder="busca foto">
+                                            <div style="display: flex; flex-wrap: wrap" >
+                                                <img v-for="resultado in resultados" :src="resultado.webformatURL" alt="" style="width: 75px; height: 75px; cursor: pointer; object-fit: cover;" @click="actualizarArticuloImagen(articulo.id,resultado.webformatURL)" @blur="articuloImagen=false" >
+
+
+                                            </div>
+                                        </div>
+                                        <!--End editar Imagen-->
+                                            <!--editar Contenido-->
+                                        <div class="content" v-if="articulo.id !== articuloContenido "
+                                             @click="articuloContenido = articulo.id, contenidoActualizar = articulo.fields.Contenido" style="word-break: break-all;">
+                                            {{articulo.fields.Contenido}}
+                                        </div>
+                                        <div v-else class="content" >
+                                            <textarea type="text" @blur="articuloContenido=false" v-model="contenidoActualizar" @keypress.enter="actualizarArticuloContenido(articulo.id, contenidoActualizar);" style="width: 100%; height: 40rem ;word-break: break-all;"> </textarea>
+                                        </div>
+                                            <!--End editar Contenido-->
+                                    </div>
+                                    <div class="modal-footer">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </body>
+</html>
